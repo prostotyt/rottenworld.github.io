@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rotten World: Point of No Return</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--              SEASON SWITCHER OVERLAY            -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div id="season-overlay" class="hidden">
+    <div class="season-overlay-inner">
+      <button id="season-close-btn" class="season-close-btn" aria-label="Close">✕</button>
+      <div class="season-overlay-title">ROTTEN WORLD</div>
+      <div class="season-overlay-sub">Point of No Return</div>
+      <div id="season-list" class="season-list">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--                  MAIN READER                   -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div id="reader-wrapper">
+
+    <!-- Fixed Header -->
+    <header id="main-header">
+      <button id="season-toggle-btn" class="header-x-btn" aria-label="Switch Season">✕</button>
+      <div class="header-center">
+        <div class="header-label">EPISODE</div>
+        <div id="header-episode-num" class="header-episode-num">01</div>
+      </div>
+      <div class="header-right">
+        <div id="header-ep-title" class="header-ep-title">Point of No Return</div>
+      </div>
+    </header>
+
+    <!-- Audio Player Bar (non-intrusive) -->
+    <div id="audio-bar" class="audio-bar hidden">
+      <div class="audio-bar-inner">
+        <div class="audio-info">
+          <span class="audio-icon">♪</span>
+          <span id="audio-track-name" class="audio-track-name">—</span>
+        </div>
+        <div class="audio-controls">
+          <button id="audio-play-btn" class="audio-play-btn" aria-label="Play">
+            <span class="play-icon">▶</span>
+          </button>
+          <div class="audio-progress-wrap">
+            <div id="audio-progress-bar" class="audio-progress-bar">
+              <div id="audio-progress-fill" class="audio-progress-fill"></div>
+            </div>
+          </div>
+          <button id="audio-dismiss-btn" class="audio-dismiss-btn" aria-label="Dismiss">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Scroll Container -->
+    <main id="scroll-container">
+      <div id="pages-container">
+        <!-- Pages injected by JS -->
+      </div>
+    </main>
+
+    <!-- Choice Overlay (bottom) -->
+    <div id="choice-overlay" class="choice-overlay hidden">
+      <div class="choice-overlay-inner">
+        <div class="choice-label">MAKE YOUR CHOICE</div>
+        <div id="choice-context" class="choice-context"></div>
+        <div id="choice-buttons" class="choice-buttons">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll Lock Hint -->
+    <div id="scroll-lock-hint" class="scroll-lock-hint hidden">
+      <span>↑ A choice awaits ↑</span>
+    </div>
+
+  </div><!-- end #reader-wrapper -->
+
+  <!-- Episode End Screen -->
+  <div id="episode-end-screen" class="episode-end-screen hidden">
+    <div class="episode-end-inner">
+      <div class="end-label">END OF EPISODE</div>
+      <div id="end-episode-num" class="end-episode-num">01</div>
+      <div id="end-episode-title" class="end-episode-title"></div>
+      <div class="end-divider"></div>
+      <button id="next-episode-btn" class="next-episode-btn">
+        Next Episode <span class="next-arrow">→</span>
+      </button>
+      <button id="end-season-btn" class="end-season-btn">
+        Change Season
+      </button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
