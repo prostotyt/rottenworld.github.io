@@ -3,338 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rotten World: Point of No Return</title>
+    <title>Rotten World: Visual System</title>
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --yellow: #F5E642;
             --yellow-glass: rgba(245, 230, 66, 0.15);
             --black: #000000;
-            --glass: rgba(255, 255, 255, 0.03);
-            --blur: blur(20px);
             --font: 'Unbounded', sans-serif;
         }
 
-        /* Плавный скролл всей страницы */
-        html { scroll-behavior: smooth; }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--black); color: white; font-family: var(--font); overflow: hidden; }
 
-        body {
-            background-color: var(--black);
-            color: white;
-            font-family: var(--font);
-            overflow-y: scroll;
-            scrollbar-width: none; /* Скрываем стандартный скроллбар для эстетики */
-        }
-        body::-webkit-scrollbar { display: none; }
-
-        /* Желтый блок (Header) */
+        /* Шапка */
         .site-header {
             position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px);
-            max-width: 600px;
-            z-index: 1000;
-            background: var(--yellow-glass);
-            backdrop-filter: var(--blur);
-            -webkit-backdrop-filter: var(--blur);
-            border: 1px solid rgba(245, 230, 66, 0.3);
-            padding: 15px 25px;
-            border-radius: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.4s ease;
+            top: 0; width: 100%; z-index: 1000;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            padding: 30px; display: flex; justify-content: center;
+        }
+        .ep-badge {
+            background: var(--yellow); color: black; padding: 5px 20px;
+            border-radius: 50px; font-weight: 900; font-size: 14px;
         }
 
-        .header-episode {
-            font-size: 20px;
-            font-weight: 900;
-            color: var(--yellow);
-            letter-spacing: 2px;
+        /* Контейнер для одной картинки */
+        .scene-container {
+            height: 100vh; width: 100vw;
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
         }
 
-        .exit-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.3s;
+        .main-art {
+            max-width: 100%; max-height: 100%;
+            object-fit: contain;
+            transition: opacity 1s ease, transform 1.5s ease;
+            opacity: 0; transform: scale(1.1);
         }
-        .exit-btn:hover { background: rgba(255, 255, 255, 0.2); }
+        .main-art.active { opacity: 1; transform: scale(1); }
 
-        /* Ридер */
-        .reader {
-            margin-top: 120px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            padding-bottom: 300px;
-        }
-
-        /* Анимация проявления серии */
-        .episode-block {
-            width: 100%;
-            max-width: 900px;
-            opacity: 0;
-            transform: translateY(40px);
-            transition: opacity 1.2s ease, transform 1.2s ease;
-            margin-bottom: 100px;
-        }
-
-        .episode-block.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .page-img {
-            width: 100%;
-            display: block;
-            margin: 0;
-            /* Эффект постепенной загрузки картинки */
-            animation: imageFade 1.5s ease-in-out;
-        }
-
-        @keyframes imageFade {
-            from { filter: grayscale(1) blur(10px); opacity: 0; }
-            to { filter: grayscale(0) blur(0); opacity: 1; }
-        }
-
-        .placeholder {
-            background: linear-gradient(180deg, #111, #000);
-            height: 800px; /* Делаем серии большими */
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #222;
-            color: #555;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-        }
-
-        /* Окно выбора */
-        .choice-overlay {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(150%);
-            width: calc(100% - 40px);
-            max-width: 500px;
-            background: rgba(10, 10, 10, 0.8);
-            backdrop-filter: var(--blur);
-            padding: 30px;
-            border-radius: 30px;
+        /* Окно диалога (внизу) */
+        .dialogue-box {
+            position: absolute; bottom: 50px;
+            width: calc(100% - 40px); max-width: 700px;
+            background: rgba(15, 15, 15, 0.8);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255,255,255,0.1);
-            transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
-            z-index: 1500;
-            text-align: center;
+            padding: 30px; border-radius: 24px;
+            opacity: 0; transform: translateY(30px);
+            transition: 0.5s ease; z-index: 500;
         }
+        .dialogue-box.active { opacity: 1; transform: translateY(0); }
 
-        .choice-overlay.active { transform: translateX(-50%) translateY(0); }
-
+        /* Кнопки выбора */
+        .choice-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
         .choice-btn {
-            background: var(--glass);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white;
-            padding: 18px;
-            margin: 8px 0;
-            border-radius: 16px;
-            cursor: pointer;
-            width: 100%;
-            font-family: var(--font);
-            font-size: 13px;
-            transition: all 0.3s;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: white; padding: 15px; border-radius: 12px;
+            cursor: pointer; font-family: var(--font); font-size: 13px;
+            transition: 0.3s; text-align: left;
         }
-        .choice-btn:hover { background: var(--yellow-glass); border-color: var(--yellow); }
+        .choice-btn:hover { background: var(--yellow); color: black; }
 
-        /* Начальный экран */
-        #season-selector {
-            position: fixed;
-            inset: 0;
-            background: black;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.8s ease;
+        /* Таймер/Прогресс (когда девочка говорит) */
+        .speech-timer {
+            height: 3px; background: var(--yellow); width: 0%;
+            position: absolute; bottom: 0; left: 0;
+            transition: width linear;
         }
 
-        .season-card {
-            background: var(--glass);
-            padding: 40px;
-            margin: 15px;
-            border-radius: 30px;
-            width: 300px;
-            text-align: center;
-            cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: 0.4s;
-        }
-        .season-card:hover { transform: scale(1.05); border-color: var(--yellow); }
-
-        .loading-line {
-            width: 100px;
-            height: 2px;
-            background: var(--yellow);
-            margin: 20px 0;
-            animation: loadingAnim 2s infinite ease-in-out;
-        }
-        @keyframes loadingAnim {
-            0% { width: 0; opacity: 0; }
-            50% { width: 100px; opacity: 1; }
-            100% { width: 0; opacity: 0; }
+        .instruction {
+            position: absolute; bottom: 20px; font-size: 10px;
+            opacity: 0.4; letter-spacing: 2px;
         }
     </style>
 </head>
-<body>
+<body onclick="nextStep()">
 
-    <div id="season-selector">
-        <h2 style="letter-spacing: 5px; margin-bottom: 10px;">ROTTEN WORLD</h2>
-        <div class="loading-line"></div>
-        <div class="season-card" onclick="startApp(1)">
-            <p style="font-size: 10px; color: var(--yellow); margin-bottom: 5px;">ENTER</p>
-            <h3>SEASON 01</h3>
+    <header class="site-header">
+        <div class="ep-badge" id="ep-title">EP 01</div>
+    </header>
+
+    <div class="scene-container">
+        <img id="scene-img" src="" class="main-art">
+        
+        <div id="dialog-ui" class="dialogue-box">
+            <p id="dialog-text" style="font-size: 14px; line-height: 1.6;"></p>
+            <div id="choices" class="choice-list"></div>
+            <div id="timer" class="speech-timer"></div>
         </div>
-    </div>
 
-    <div id="main-app">
-        <header class="site-header" id="header">
-            <button class="exit-btn" onclick="location.reload()">✕</button>
-            <div class="header-episode" id="ep-badge">EP 01</div>
-            <div style="width: 35px;"></div>
-        </header>
-
-        <div class="reader" id="content-area"></div>
-
-        <div id="choice-ui" class="choice-overlay">
-            <h4 id="choice-question" style="margin-bottom: 20px; font-size: 14px;"></h4>
-            <div id="choice-buttons"></div>
-        </div>
+        <div class="instruction">НАЖМИ НА ЭКРАН, ЧТОБЫ ПРОДОЛЖИТЬ</div>
     </div>
 
     <script>
-        const MANGA_DATA = {
-            season1: [
-                {
-                    id: "01",
-                    pages: [
-                        { type: "placeholder", text: "Сцена 1: Руины города. Ветер гоняет мусор." },
-                        { type: "placeholder", text: "Сцена 2: Рен заходит в заброшенное здание." },
-                        { type: "placeholder", text: "Сцена 3: Он слышит кашель в темноте." },
-                        { type: "placeholder", text: "Сцена 4: В углу сидит Мира. Она смотрит прямо на него." }
-                    ],
-                    choice: {
-                        question: "Рен медлит. Что он скажет?",
-                        options: [
-                            { text: "Эй, девочка... что с тобой?", nextId: "02" },
-                            { text: "Что тут произошло?", nextId: "02" }
-                        ]
-                    }
-                },
-                {
-                    id: "02",
-                    pages: [
-                        { type: "placeholder", text: "Сцена 5: Мира молча указывает на его сумку." },
-                        { type: "placeholder", text: "Сцена 6: Рен достает остатки пайка." },
-                        { type: "placeholder", text: "Сцена 7: Начало их долгого пути через Гнилой Мир." }
-                    ]
-                }
-            ]
-        };
+        // === ТВОЙ РЕДАКТОР СЮЖЕТА ===
+        const STORY = [
+            { 
+                type: "image", 
+                url: "img/art1.jpg", // Сюда путь к фото
+                text: "Рен шел по пустым улицам, пока не услышал шорох..."
+            },
+            {
+                type: "choice",
+                url: "img/art2.jpg", // Фото, где он нашел девочку
+                question: "Рен видит девочку. Что он сделает?",
+                options: [
+                    { text: "1. Эй, девочка, ты как?", nextIndex: 3 },
+                    { text: "2. Что случилось?", nextIndex: 3 }
+                ]
+            },
+            {
+                type: "speech",
+                url: "img/art3.jpg", // Фото, где девочка отвечает
+                text: "Девочка: — Я ждала тебя. Пошли.",
+                duration: 3000 // Сколько секунд она "говорит" (3 сек)
+            },
+            {
+                type: "image",
+                url: "img/art4.jpg",
+                text: "Они двинулись вглубь Гнилого Мира..."
+            }
+        ];
 
-        function startApp(sNum) {
-            const selector = document.getElementById('season-selector');
-            selector.style.opacity = '0';
+        let currentIndex = 0;
+        let isWaiting = false;
+
+        function updateScene() {
+            const step = STORY[currentIndex];
+            const img = document.getElementById('scene-img');
+            const ui = document.getElementById('dialog-ui');
+            const text = document.getElementById('dialog-text');
+            const choices = document.getElementById('choices');
+            const timer = document.getElementById('timer');
+
+            // 1. Обновляем картинку
+            img.classList.remove('active');
             setTimeout(() => {
-                selector.style.display = 'none';
-                loadEpisode("01");
-            }, 800);
+                img.src = step.url;
+                img.classList.add('active');
+            }, 100);
+
+            // 2. Логика по типам
+            ui.classList.remove('active');
+            choices.innerHTML = '';
+            timer.style.width = '0%';
+            isWaiting = true;
+
+            setTimeout(() => {
+                ui.classList.add('active');
+                text.innerText = step.text || step.question || "";
+
+                if (step.type === "choice") {
+                    isWaiting = true; // Блокируем клик, пока не выберет
+                    step.options.forEach(opt => {
+                        const btn = document.createElement('button');
+                        btn.className = 'choice-btn';
+                        btn.innerText = opt.text;
+                        btn.onclick = (e) => {
+                            e.stopPropagation();
+                            currentIndex = opt.nextIndex;
+                            updateScene();
+                        };
+                        choices.appendChild(btn);
+                    });
+                } else if (step.type === "speech") {
+                    isWaiting = true;
+                    timer.style.transition = `width ${step.duration}ms linear`;
+                    setTimeout(() => timer.style.width = '100%', 50);
+                    
+                    setTimeout(() => {
+                        isWaiting = false; // После речи можно кликать дальше
+                    }, step.duration);
+                } else {
+                    isWaiting = false;
+                }
+            }, 600);
         }
 
-        function loadEpisode(epId) {
-            const ep = MANGA_DATA.season1.find(e => e.id === epId);
-            if (!ep) return;
-
-            const area = document.getElementById('content-area');
+        function nextStep() {
+            if (isWaiting) return; // Если идет речь или выбор - клик не работает
             
-            // Создаем блок серии
-            const epBlock = document.createElement('div');
-            epBlock.className = 'episode-block';
-            epBlock.id = `ep-${ep.id}`;
-            
-            // Наполняем серию (делаем её "не маленькой")
-            ep.pages.forEach(p => {
-                const page = document.createElement('div');
-                page.className = 'placeholder';
-                page.innerText = p.text;
-                epBlock.appendChild(page);
-            });
-
-            area.appendChild(epBlock);
-
-            // Плавное появление блока через Intersection Observer
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                        document.getElementById('ep-badge').innerText = `EP ${ep.id}`;
-                    }
-                });
-            }, { threshold: 0.1 });
-
-            observer.observe(epBlock);
-
-            // Появление выбора
-            if (ep.choice) {
-                // Ждем, пока юзер доскроллит до конца текущей серии
-                const checkScroll = () => {
-                    const lastPage = epBlock.lastElementChild;
-                    const rect = lastPage.getBoundingClientRect();
-                    if (rect.top < window.innerHeight) {
-                        showChoice(ep.choice);
-                        window.removeEventListener('scroll', checkScroll);
-                    }
-                };
-                window.addEventListener('scroll', checkScroll);
+            if (currentIndex < STORY.length - 1) {
+                currentIndex++;
+                updateScene();
             }
         }
 
-        function showChoice(choiceData) {
-            const ui = document.getElementById('choice-ui');
-            const btnArea = document.getElementById('choice-buttons');
-            document.getElementById('choice-question').innerText = choiceData.question;
-            
-            btnArea.innerHTML = '';
-            choiceData.options.forEach(opt => {
-                const b = document.createElement('button');
-                b.className = 'choice-btn';
-                b.innerText = opt.text;
-                b.onclick = () => {
-                    ui.classList.remove('active');
-                    loadEpisode(opt.nextId);
-                    // Плавный скролл к началу новой серии
-                    setTimeout(() => {
-                        document.getElementById(`ep-${opt.nextId}`).scrollIntoView({ behavior: 'smooth' });
-                    }, 100);
-                };
-                btnArea.appendChild(b);
-            });
-            
-            setTimeout(() => ui.classList.add('active'), 500);
-        }
+        // Запуск
+        window.onload = updateScene;
     </script>
 </body>
 </html>
