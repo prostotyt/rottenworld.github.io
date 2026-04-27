@@ -8,12 +8,15 @@
     <style>
         :root {
             --yellow: #F5E642;
-            --yellow-glass: rgba(245, 230, 66, 0.2);
+            --yellow-glass: rgba(245, 230, 66, 0.15);
             --black: #000000;
-            --glass: rgba(255, 255, 255, 0.05);
-            --blur: blur(15px);
+            --glass: rgba(255, 255, 255, 0.03);
+            --blur: blur(20px);
             --font: 'Unbounded', sans-serif;
         }
+
+        /* Плавный скролл всей страницы */
+        html { scroll-behavior: smooth; }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -21,263 +24,317 @@
             background-color: var(--black);
             color: white;
             font-family: var(--font);
-            overflow-x: hidden;
+            overflow-y: scroll;
+            scrollbar-width: none; /* Скрываем стандартный скроллбар для эстетики */
         }
+        body::-webkit-scrollbar { display: none; }
 
-        /* --- Желтый блок сверху (Header) --- */
+        /* Желтый блок (Header) */
         .site-header {
             position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 100;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 600px;
+            z-index: 1000;
             background: var(--yellow-glass);
             backdrop-filter: var(--blur);
             -webkit-backdrop-filter: var(--blur);
-            border-bottom: 1px solid var(--yellow);
-            padding: 20px;
+            border: 1px solid rgba(245, 230, 66, 0.3);
+            padding: 15px 25px;
+            border-radius: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: all 0.4s ease;
         }
 
         .header-episode {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 900;
             color: var(--yellow);
-            text-shadow: 0 0 15px rgba(245, 230, 66, 0.5);
+            letter-spacing: 2px;
         }
 
         .exit-btn {
             background: rgba(255, 255, 255, 0.1);
-            border: 1px solid white;
+            border: none;
             color: white;
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: 0.3s;
         }
+        .exit-btn:hover { background: rgba(255, 255, 255, 0.2); }
 
-        /* --- Контент (Ридер) --- */
+        /* Ридер */
         .reader {
-            margin-top: 100px;
+            margin-top: 120px;
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 100%;
+            padding-bottom: 300px;
         }
 
-        .page-item {
+        /* Анимация проявления серии */
+        .episode-block {
             width: 100%;
-            max-width: 800px;
-            margin-bottom: 0;
-            transition: opacity 0.5s ease;
+            max-width: 900px;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 1.2s ease, transform 1.2s ease;
+            margin-bottom: 100px;
         }
 
-        .page-item img {
+        .episode-block.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .page-img {
             width: 100%;
             display: block;
+            margin: 0;
+            /* Эффект постепенной загрузки картинки */
+            animation: imageFade 1.5s ease-in-out;
+        }
+
+        @keyframes imageFade {
+            from { filter: grayscale(1) blur(10px); opacity: 0; }
+            to { filter: grayscale(0) blur(0); opacity: 1; }
         }
 
         .placeholder {
-            background: #111;
-            height: 600px;
+            background: linear-gradient(180deg, #111, #000);
+            height: 800px; /* Делаем серии большими */
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px dashed #333;
-            color: #444;
-            text-align: center;
-            padding: 20px;
+            border: 1px solid #222;
+            color: #555;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 4px;
         }
 
-        /* --- Окно выбора (Choices) --- */
+        /* Окно выбора */
         .choice-overlay {
             position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: linear-gradient(transparent, rgba(0,0,0,0.9));
-            padding: 40px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transform: translateY(100%);
-            transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-            z-index: 150;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(150%);
+            width: calc(100% - 40px);
+            max-width: 500px;
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: var(--blur);
+            padding: 30px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+            z-index: 1500;
+            text-align: center;
         }
 
-        .choice-overlay.active { transform: translateY(0); }
+        .choice-overlay.active { transform: translateX(-50%) translateY(0); }
 
         .choice-btn {
             background: var(--glass);
             border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: var(--blur);
             color: white;
-            padding: 15px 30px;
-            margin: 10px;
-            border-radius: 12px;
+            padding: 18px;
+            margin: 8px 0;
+            border-radius: 16px;
             cursor: pointer;
             width: 100%;
-            max-width: 400px;
             font-family: var(--font);
-            font-size: 14px;
-            transition: all 0.3s ease;
-            text-align: left;
+            font-size: 13px;
+            transition: all 0.3s;
         }
+        .choice-btn:hover { background: var(--yellow-glass); border-color: var(--yellow); }
 
-        .choice-btn:hover {
-            background: var(--yellow-glass);
-            border-color: var(--yellow);
-            transform: scale(1.02);
-        }
-
-        /* --- Сезоны --- */
+        /* Начальный экран */
         #season-selector {
             position: fixed;
             inset: 0;
             background: black;
-            z-index: 200;
+            z-index: 9999;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            transition: opacity 0.8s ease;
         }
 
         .season-card {
             background: var(--glass);
-            padding: 30px;
-            margin: 10px;
-            border-radius: 20px;
-            width: 250px;
+            padding: 40px;
+            margin: 15px;
+            border-radius: 30px;
+            width: 300px;
             text-align: center;
             cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: 0.4s;
         }
+        .season-card:hover { transform: scale(1.05); border-color: var(--yellow); }
 
-        .season-card:hover { border-color: var(--yellow); background: var(--yellow-glass); }
-
-        .hidden { display: none !important; }
+        .loading-line {
+            width: 100px;
+            height: 2px;
+            background: var(--yellow);
+            margin: 20px 0;
+            animation: loadingAnim 2s infinite ease-in-out;
+        }
+        @keyframes loadingAnim {
+            0% { width: 0; opacity: 0; }
+            50% { width: 100px; opacity: 1; }
+            100% { width: 0; opacity: 0; }
+        }
     </style>
 </head>
 <body>
 
     <div id="season-selector">
-        <h1 style="margin-bottom: 40px; font-weight: 900;">SELECT SEASON</h1>
+        <h2 style="letter-spacing: 5px; margin-bottom: 10px;">ROTTEN WORLD</h2>
+        <div class="loading-line"></div>
         <div class="season-card" onclick="startApp(1)">
-            <div style="color: var(--yellow); font-size: 12px; margin-bottom: 10px;">01</div>
-            <div style="font-size: 20px;">SEASON ONE</div>
-        </div>
-        <div class="season-card" onclick="startApp(2)">
-            <div style="color: var(--yellow); font-size: 12px; margin-bottom: 10px;">02</div>
-            <div style="font-size: 20px;">SEASON TWO</div>
+            <p style="font-size: 10px; color: var(--yellow); margin-bottom: 5px;">ENTER</p>
+            <h3>SEASON 01</h3>
         </div>
     </div>
 
-    <div id="main-app" class="hidden">
-        <header class="site-header">
+    <div id="main-app">
+        <header class="site-header" id="header">
             <button class="exit-btn" onclick="location.reload()">✕</button>
-            <div class="header-episode" id="ep-badge">01</div>
-            <div style="width: 40px;"></div> </header>
+            <div class="header-episode" id="ep-badge">EP 01</div>
+            <div style="width: 35px;"></div>
+        </header>
 
-        <div class="reader" id="content-area">
-            </div>
+        <div class="reader" id="content-area"></div>
 
         <div id="choice-ui" class="choice-overlay">
-            <p id="choice-text" style="margin-bottom: 20px; font-size: 12px; opacity: 0.7;">ЧТО СДЕЛАТЬ?</p>
-            <div id="choice-buttons" style="width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
+            <h4 id="choice-question" style="margin-bottom: 20px; font-size: 14px;"></h4>
+            <div id="choice-buttons"></div>
         </div>
     </div>
 
     <script>
-        // === ТВОЯ ЗОНА РЕДАКТИРОВАНИЯ ===
         const MANGA_DATA = {
             season1: [
                 {
                     id: "01",
-                    title: "Начало",
                     pages: [
-                        { type: "placeholder", text: "Рен идет по руинам (Картинка 1)" },
-                        { type: "placeholder", text: "Он замечает шевеление в обломках (Картинка 2)" },
-                        { type: "placeholder", text: "Встреча с Мирой (Картинка 3)" }
+                        { type: "placeholder", text: "Сцена 1: Руины города. Ветер гоняет мусор." },
+                        { type: "placeholder", text: "Сцена 2: Рен заходит в заброшенное здание." },
+                        { type: "placeholder", text: "Сцена 3: Он слышит кашель в темноте." },
+                        { type: "placeholder", text: "Сцена 4: В углу сидит Мира. Она смотрит прямо на него." }
                     ],
                     choice: {
-                        question: "Рен стоит перед девочкой. Что сказать?",
+                        question: "Рен медлит. Что он скажет?",
                         options: [
-                            { text: "1. Эй, девочка, что с тобой?", nextId: "02" },
-                            { text: "2. Что случилось?", nextId: "02" }
+                            { text: "Эй, девочка... что с тобой?", nextId: "02" },
+                            { text: "Что тут произошло?", nextId: "02" }
                         ]
                     }
                 },
                 {
                     id: "02",
-                    title: "Диалог",
                     pages: [
-                        { type: "placeholder", text: "Мира поднимает глаза. Они красные. (Картинка 4)" },
-                        { type: "placeholder", text: "Она молчит, но протягивает руку. (Картинка 5)" }
+                        { type: "placeholder", text: "Сцена 5: Мира молча указывает на его сумку." },
+                        { type: "placeholder", text: "Сцена 6: Рен достает остатки пайка." },
+                        { type: "placeholder", text: "Сцена 7: Начало их долгого пути через Гнилой Мир." }
                     ]
                 }
-            ],
-            season2: []
+            ]
         };
 
-        let currentSeason = 1;
-
         function startApp(sNum) {
-            currentSeason = sNum;
-            document.getElementById('season-selector').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            loadEpisode("01");
+            const selector = document.getElementById('season-selector');
+            selector.style.opacity = '0';
+            setTimeout(() => {
+                selector.style.display = 'none';
+                loadEpisode("01");
+            }, 800);
         }
 
         function loadEpisode(epId) {
-            const ep = MANGA_DATA[`season${currentSeason}`].find(e => e.id === epId);
+            const ep = MANGA_DATA.season1.find(e => e.id === epId);
             if (!ep) return;
 
             const area = document.getElementById('content-area');
-            document.getElementById('ep-badge').innerText = ep.id;
-
-            // Добавляем страницы
+            
+            // Создаем блок серии
+            const epBlock = document.createElement('div');
+            epBlock.className = 'episode-block';
+            epBlock.id = `ep-${ep.id}`;
+            
+            // Наполняем серию (делаем её "не маленькой")
             ep.pages.forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'page-item';
-                div.innerHTML = `<div class="placeholder">${p.text}</div>`;
-                area.appendChild(div);
+                const page = document.createElement('div');
+                page.className = 'placeholder';
+                page.innerText = p.text;
+                epBlock.appendChild(page);
             });
 
-            // Проверяем наличие выбора
+            area.appendChild(epBlock);
+
+            // Плавное появление блока через Intersection Observer
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        document.getElementById('ep-badge').innerText = `EP ${ep.id}`;
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            observer.observe(epBlock);
+
+            // Появление выбора
             if (ep.choice) {
-                setTimeout(() => {
-                    const choiceUI = document.getElementById('choice-ui');
-                    const btnArea = document.getElementById('choice-buttons');
-                    document.getElementById('choice-text').innerText = ep.choice.question;
-                    
-                    btnArea.innerHTML = '';
-                    ep.choice.options.forEach(opt => {
-                        const b = document.createElement('button');
-                        b.className = 'choice-btn';
-                        b.innerText = opt.text;
-                        b.onclick = () => {
-                            choiceUI.classList.remove('active');
-                            loadEpisode(opt.nextId);
-                        };
-                        btnArea.appendChild(b);
-                    });
-                    
-                    choiceUI.classList.add('active');
-                }, 1000); // Показываем выбор после небольшой задержки
+                // Ждем, пока юзер доскроллит до конца текущей серии
+                const checkScroll = () => {
+                    const lastPage = epBlock.lastElementChild;
+                    const rect = lastPage.getBoundingClientRect();
+                    if (rect.top < window.innerHeight) {
+                        showChoice(ep.choice);
+                        window.removeEventListener('scroll', checkScroll);
+                    }
+                };
+                window.addEventListener('scroll', checkScroll);
             }
         }
 
-        // Плавный скролл при добавлении контента
-        window.onscroll = function() {
-            // Тут можно добавить логику авто-подгрузки следующей серии, 
-            // если она не привязана к выбору
-        };
+        function showChoice(choiceData) {
+            const ui = document.getElementById('choice-ui');
+            const btnArea = document.getElementById('choice-buttons');
+            document.getElementById('choice-question').innerText = choiceData.question;
+            
+            btnArea.innerHTML = '';
+            choiceData.options.forEach(opt => {
+                const b = document.createElement('button');
+                b.className = 'choice-btn';
+                b.innerText = opt.text;
+                b.onclick = () => {
+                    ui.classList.remove('active');
+                    loadEpisode(opt.nextId);
+                    // Плавный скролл к началу новой серии
+                    setTimeout(() => {
+                        document.getElementById(`ep-${opt.nextId}`).scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                };
+                btnArea.appendChild(b);
+            });
+            
+            setTimeout(() => ui.classList.add('active'), 500);
+        }
     </script>
 </body>
 </html>
